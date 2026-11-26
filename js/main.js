@@ -11,6 +11,8 @@ let loadingPaths;
 let spineData;
 
 let customScale = 1;
+let positionX = 0;
+let positionY = 0;
 let targetFps = 60;
 let bgmfile = './assets/audio/Shooting Stars.flac';
 let bgmvolume = 0;
@@ -214,8 +216,8 @@ function updateHitboxes() {
 // NOTE: X and Y appears to be inversely related from cursor position to bone adjustment.
 //       This behavior's reason is unknown, but it LOOKS right so leave it alone!
 function trackMouse() {
-	let adjX = (mousePos.x / canvas.width) - 0.5;
-	let adjY = (mousePos.y / canvas.height) - 0.5;
+	let adjX = (mousePos.x / canvas.width) - 0.5 - positionX;
+	let adjY = (mousePos.y / canvas.height) - 0.5 - positionY;
 	TEye.y = TEye.y - (Math.sign(adjX) * EYE_STEP);
 	TEye.x = TEye.x - (Math.sign(adjY) * EYE_STEP);
 	TEye.y = clamp(TEye.y, EPointY - (Math.abs(adjX) * EYE_CLAMP_X), EPointY + (Math.abs(adjX) * EYE_CLAMP_X));
@@ -421,8 +423,16 @@ function init() {
 			if (props.scale) {
 				customScale = props.scale.value;
 				document.documentElement.style.setProperty('--wallpaper-scale', customScale);
-				resize();
 			}
+			if (props.positionx) {
+				positionX = props.positionx.value / 100;
+				document.documentElement.style.setProperty('--wallpaper-position-x', props.positionx.value + 'vw');
+			}
+			if (props.positiony) {
+				positionY = props.positiony.value / 100;
+				document.documentElement.style.setProperty('--wallpaper-position-y', props.positiony.value + 'vh');
+			}
+			if (props.scale || props.positionx || props.positiony) resize();
 			if (props.targetfps) targetFps = props.targetfps.value;
 
 			if (props.introanimation) introAnimation = props.introanimation.value;
@@ -458,7 +468,7 @@ function init() {
 			if (props.character) applyCharacterSetting(props.character.value);
 
 			// 监听模型分辨率设置
-			if (props.modelresolution && props.modelresolution.value !== modelResolution) {
+			if (props.modelresolution) {
 				modelResolution = props.modelresolution.value;
 				scheduleModelReload();
 			}
@@ -882,6 +892,8 @@ function resize() {
 		transpose = 1600 / canvas.height;
 	}
 
+	centerX -= positionX * width;
+	centerY += positionY * height;
 	viewCenterX = centerX;
 	viewCenterY = centerY;
 	viewWidth = width;
